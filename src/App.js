@@ -1,24 +1,68 @@
 import React from 'react';
 import './App.css';
 
-class Square extends React.Component {
-  render() {
-    return (
-      <button className="square">
-        {/* TODO */}
-      </button>
-    );
-  }
+// class Square extends React.Component {
+//   render() {
+//     return (
+//       <button
+//         className="square"
+//         onClick = {()=>this.props.onClick()}
+//       >
+//         {this.props.value}
+//       </button>
+//     );
+//   }
+// }
+/** class to function */
+
+function Square(props) {
+  return (
+    <button
+      className = 'square'
+      onClick = {props.onClick}
+    >
+      {props.value}
+    </button>
+  )
 }
 
 class Board extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      squares: Array(9).fill(null),
+      xIsNext: true,
+    }
+  }
   renderSquare(i) {
-    return <Square />;
+    return <Square 
+      value={this.state.squares[i]}
+      onClick = {()=>this.handleClick(i)}/>;
+  }
+  handleClick(i) {
+    const squares = this.state.squares.slice();
+    if (whoIsWin(squares) || squares[i]) {
+      return;
+    }
+    squares[i] = this.state.xIsNext ? '✘': 'O' // ? true: false
+    this.setState({
+      squares: squares,
+      xIsNext: !this.state.xIsNext,
+    });
   }
 
   render() {
-    const status = 'Next player: X';
-
+    const winner = whoIsWin(this.state.squares);
+    // const status = winner ? 'Winner: ' + winner : 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+    let status;
+    if (winner) {
+      status = "Winner: " + winner;
+    } else if (this.state.squares.every(Boolean)) {  // 모든 칸이 채워졌는지 확인
+      status = "Draw";
+    } else {
+      status = "Next player: " + (this.state.xIsNext ? "X" : "O");
+    }
+    
     return (
       <div>
         <div className="status">{status}</div>
@@ -57,6 +101,24 @@ class Game extends React.Component {
     );
   }
 }
+
+function whoIsWin(squares) {
+  const line = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6],
+  ]
+  const winnerLine = line.find(indices => 
+    squares[indices[0]] && indices.every(i => squares[i] === squares[indices[0]])
+  );
+  return winnerLine ? squares[winnerLine[0]] : null;
+}
+
 
 function App() {
   return (
